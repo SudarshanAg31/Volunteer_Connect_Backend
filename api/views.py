@@ -54,8 +54,12 @@ def register(request):
         phone = data.get('phone', '').strip()
         password = data.get('password', '').strip()
         role = data.get('role', 'volunteer')
+        # role = request.GET.get('role', '')
+        # email = request.GET.get('email', '')
         if role == 'admin':
             return json_response(False, 'SuperAdmin cannot be registered from app', status=403)
+        if role == 'ngo':
+            opportunities = opportunities.filter(created_by_email=email)
         if not all([name, email, phone, password]):
             return json_response(False, 'All fields are required', status=400)
         
