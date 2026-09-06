@@ -21,11 +21,10 @@ def get_user_data(user):
     }
 
 def get_opportunity_data(opp):
-        # Fix: Date ko safely handle karo (String ho ya DateField)
     if hasattr(opp.date, 'strftime'):
         date_str = opp.date.strftime('%Y-%m-%d')
     else:
-        date_str = opp.date  # Agar pehle se string hai
+        date_str = opp.date
     return {
         'id': opp.id,
         'title': opp.title,
@@ -35,7 +34,7 @@ def get_opportunity_data(opp):
         'location': opp.location,
         'latitude': opp.latitude,
         'longitude': opp.longitude,
-        'date': date_str,  # Fix: Direct string, strftime nahi
+        'date': date_str,
         'time': opp.time,
         'volunteers_required': opp.volunteers_required,
         'created_at': opp.created_at.strftime('%Y-%m-%d %H:%M:%S') if opp.created_at else '',
@@ -54,12 +53,10 @@ def register(request):
         phone = data.get('phone', '').strip()
         password = data.get('password', '').strip()
         role = data.get('role', 'volunteer')
-        # role = request.GET.get('role', '')
-        # email = request.GET.get('email', '')
+        
         if role == 'admin':
             return json_response(False, 'SuperAdmin cannot be registered from app', status=403)
-        if role == 'ngo':
-            opportunities = opportunities.filter(created_by_email=email)
+        
         if not all([name, email, phone, password]):
             return json_response(False, 'All fields are required', status=400)
         
@@ -136,37 +133,40 @@ def user_detail(request, user_id):
 
 @csrf_exempt
 def opportunity_list(request):
+    # ✅ FIX: Check for GET first, then handle other methods
     if request.method == 'GET':
-        opportunities = Opportunity.objects.all().order_by('-created_at')
+        try:
+            opportunities = Opportunity.objects.all().order_by('-created_at')
+            
+            role = request.GET.get('role', '')
+            email = request.GET.get('email', '')
+            
+            if role == 'ngo':
+                opportunities = opportunities.filter(created_by_email=email)
+            
+            search = request.GET.get('search', '')
+            if search:
+                opportunities = opportunities.filter(
+                    models.Q(title__icontains=search) |
+                    models.Q(description__icontains=search) |
+                    models.Q(ngo_name__icontains=search) |
+                    models.Q(location__icontains=search)
+                )
+            
+            category = request.GET.get('category', '')
+            if category:
+                opportunities = opportunities.filter(category=category)
+            
+            data = [get_opportunity_data(opp) for opp in opportunities]
+            return json_response(True, 'Opportunities fetched', data)
         
-        # NGO ko sirf apni opportunities dikhni hain
-        role = request.GET.get('role', '')
-        email = request.GET.get('email', '')
-        
-        if role == 'ngo':
-            opportunities = opportunities.filter(created_by_email=email)
-        
-        search = request.GET.get('search', '')
-        if search:
-            opportunities = opportunities.filter(
-                models.Q(title__icontains=search) |
-                models.Q(description__icontains=search) |
-                models.Q(ngo_name__icontains=search) |
-                models.Q(location__icontains=search)
-            )
-        
-        category = request.GET.get('category', '')
-        if category:
-            opportunities = opportunities.filter(category=category)
-        
-        data = [get_opportunity_data(opp) for opp in opportunities]
-        return json_response(True, 'Opportunities fetched', data)
+        except Exception as e:
+            return json_response(False, str(e), status=500)
     
     elif request.method == 'POST':
         try:
             data = json.loads(request.body)
             
-            # Admin ya NGO create kar sakta hai
             role = data.get('role', 'volunteer')
             if role not in ['admin', 'ngo']:
                 return json_response(False, 'Only Admin or NGO can create opportunities', status=403)
@@ -182,7 +182,7 @@ def opportunity_list(request):
                 date=data.get('date'),
                 time=data.get('time'),
                 volunteers_required=data.get('volunteers_required'),
-                created_by_email=data.get('email', '')  # <--- YEH LINE IMPORTANT HAI
+                created_by_email=data.get('email', '')
             )
             
             return json_response(True, 'Opportunity created', get_opportunity_data(opportunity), status=201)
@@ -192,6 +192,7 @@ def opportunity_list(request):
         except Exception as e:
             return json_response(False, str(e), status=500)
     
+    # ✅ FIX: Default response for other methods
     return json_response(False, 'Method not allowed', status=405)
 
 @csrf_exempt
