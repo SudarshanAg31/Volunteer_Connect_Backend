@@ -28,4 +28,3 @@ else:
         password=SUPERUSER_PASSWORD
     )
     print(f'✅ Superuser created: {SUPERUSER_NAME}')
-EOF
