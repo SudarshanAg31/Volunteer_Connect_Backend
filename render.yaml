@@ -1,0 +1,16 @@
+services:
+  - type: web
+    plan: free
+    name: volunteer-connect-backend
+    runtime: python
+    buildCommand: './build.sh'
+    startCommand: 'gunicorn backend.wsgi:application'
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.11
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: PYTHONUNBUFFERED
+        value: 1
