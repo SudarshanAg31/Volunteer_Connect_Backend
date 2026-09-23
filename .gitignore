@@ -91,4 +91,4 @@ htmlcov/
 !Procfile
 !runtime.txt
 !railway.json
-!api/migrations/__init__.py
+!api/migrations/__init__.py.env 
