@@ -1,0 +1,94 @@
+# ============================================
+# DJANGO BACKEND .gitignore
+# ============================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment ❌ MOST IMPORTANT
+venv/
+env/
+ENV/
+.venv/
+backend/venv/
+
+# Django Database ❌ MOST IMPORTANT
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+*.sqlite
+
+# Django Migrations (Optional)
+# api/migrations/*.py
+# !api/migrations/__init__.py
+# !api/migrations/0001_initial.py
+
+# Django Static & Media ❌
+staticfiles/
+static/
+media/
+
+# Django Cache
+.django_cache/
+
+# Environment ❌
+.env
+.env.*
+*.env
+secrets.json
+secret_key.txt
+
+# Logs
+*.log
+logs/
+local_settings.py
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Railway
+.railway/
+.heroku/
+
+# ============================================
+# IMPORTANT: KEEP THESE FILES
+# ============================================
+# DO NOT ignore these:
+!requirements.txt
+!manage.py
+!Procfile
+!runtime.txt
+!railway.json
+!api/migrations/__init__.py
